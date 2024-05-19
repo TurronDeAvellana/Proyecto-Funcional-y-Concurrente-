@@ -14,6 +14,8 @@ package object Datos {
   //HL:ML: hora local de lelgada del vuelo
   //Esc: Numero de escalas del vuelo (sin cambiar de avion)
 
+  type Itinerario = List[Vuelo]
+
   val aeropuertosCurso = List(
     Aeropuerto("CLO", 100, 200, -500), // Cali
     Aeropuerto("BOG", 300, 500, -500), // Bogota
@@ -52,6 +54,8 @@ package object Datos {
     Vuelo("TURKISH", 7799, "CLO", 7, 0, "IST", 14, 0, 3),
     Vuelo("QATAR", 5566, "IST", 23, 0, "SVO", 2, 0, 0)
   )
+
+
 
 
 }
