@@ -105,23 +105,54 @@ package object Itinerarios {
   }
 
 
+def itinerariosAire(vuelos : List [ Vuelo ] , aeropuertos : List [ Aeropuerto] ) : ( String , String )=>List [Itinerario ]= {
+        //Obtiene todos los itinerarios podibles
+        val funcionItinerario = itinerarios(vuelos, aeropuertos)
 
-  def itinerariosEscalas(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (String, String) => List[Itinerario] = {
-    val obtenerItinerarios = itinerarios(vuelos, aeropuertos)
 
-    def encontrarTresMenosEscalas(codigo1: String, codigo2: String): List[Itinerario] = {
-      val todosItinerarios = obtenerItinerarios(codigo1, codigo2)
-      // Ordenar los itinerarios por el número de escalas (longitud de la lista - 1)
-      val itinerariosOrdenados = todosItinerarios.sortBy(_.length - 1)
-      // Tomar los primeros tres itinerarios
-      itinerariosOrdenados.take(3)
+
+
+
+
+
+        //Calcula la distancia de un aeropuerto a otro
+        def funDistancia(org:String, des:String) = {
+            val a1 = aeropuertos.filter(_.Cod == org)
+            val a2 = aeropuertos.filter(_.Cod == des)
+
+            val x1 = a1(0).X
+            val y1 = a1(0).Y
+            val x2 = a2(0).X
+            val y2 = a2(0).Y
+
+            math.sqrt(math.pow((x2-x1),2)+math.pow((y2-y1),2))
+        }
+
+        //Calcula el tiempo total de vuelo de un itinerario
+        def calcularTiempo (v:Itinerario) = {
+           val cadaDistancia =  for {
+                j <- v
+
+            } yield funDistancia(j.Org, j.Dst)
+
+            cadaDistancia.sum
+        }
+
+        //Funcion de salida, calcula los tres itinerarios que tienen menor tiempo en el aire
+        def miItinerario (aeropuerto1:String, aeropuerto2:String): List[Itinerario] = {
+            val misItinerarios = funcionItinerario(aeropuerto1, aeropuerto2)
+
+            val tiempos =  for {
+                    i <- misItinerarios
+                    distancia = calcularTiempo(i)
+                } yield (i, distancia)
+
+            val salida = tiempos.sortBy(_._2)
+            (((salida.unzip)._1).toList).take(3)
+        }
+
+        miItinerario
     }
-
-    encontrarTresMenosEscalas
-  }
-
-
-
 
 
 }
