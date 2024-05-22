@@ -106,6 +106,22 @@ package object Itinerarios {
 
 
 
+  def itinerariosEscalas(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (String, String) => List[Itinerario] = {
+    val obtenerItinerarios = itinerarios(vuelos, aeropuertos)
+
+    def encontrarTresMenosEscalas(codigo1: String, codigo2: String): List[Itinerario] = {
+      val todosItinerarios = obtenerItinerarios(codigo1, codigo2)
+      // Ordenar los itinerarios por el número de escalas (longitud de la lista - 1)
+      val itinerariosOrdenados = todosItinerarios.sortBy(_.length - 1)
+      // Tomar los primeros tres itinerarios
+      itinerariosOrdenados.take(3)
+    }
+
+    encontrarTresMenosEscalas
+  }
+
+
+
 
 
 }
