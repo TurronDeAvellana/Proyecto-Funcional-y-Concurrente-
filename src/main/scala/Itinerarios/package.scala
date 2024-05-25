@@ -120,9 +120,6 @@ package object Itinerarios {
             val horaSalida = (vuelo.HS + (vuelo.MS/60)) - gmtSalida
             val horaLlegada = (vuelo.HL + (vuelo.ML/60)) - gmtLlegada
             val tiempoVuelo = horaLlegada - horaSalida
-
-            println(vuelo.HS + " " + gmtSalida)
-            println(horaSalida)
             
             if (tiempoVuelo < 0) 24 + tiempoVuelo else tiempoVuelo
         }
