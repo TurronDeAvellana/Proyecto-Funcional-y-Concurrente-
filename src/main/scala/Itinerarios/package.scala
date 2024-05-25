@@ -109,51 +109,53 @@ package object Itinerarios {
         //Obtiene todos los itinerarios podibles
         val funcionItinerario = itinerarios(vuelos, aeropuertos)
 
+        //Calcula el tiempo total de un solo vuelo
+        def funTiempo(vuelo:Vuelo) = {
+            val a1 = aeropuertos.filter(_.Cod == vuelo.Org)
+            val a2 = aeropuertos.filter(_.Cod == vuelo.Dst)
 
+            val gmtSalida = (a1.head).GMT/100
+            val gmtLlegada = (a2.head).GMT/100
+           
+            val horaSalida = (vuelo.HS + (vuelo.MS/60)) - gmtSalida
+            val horaLlegada = (vuelo.HL + (vuelo.ML/60)) - gmtLlegada
+            val tiempoVuelo = horaLlegada - horaSalida
 
-
-
-
-
-        //Calcula la distancia de un aeropuerto a otro
-        def funDistancia(org:String, des:String) = {
-            val a1 = aeropuertos.filter(_.Cod == org)
-            val a2 = aeropuertos.filter(_.Cod == des)
-
-            val x1 = a1(0).X
-            val y1 = a1(0).Y
-            val x2 = a2(0).X
-            val y2 = a2(0).Y
-
-            math.sqrt(math.pow((x2-x1),2)+math.pow((y2-y1),2))
+            println(vuelo.HS + " " + gmtSalida)
+            println(horaSalida)
+            
+            if (tiempoVuelo < 0) 24 + tiempoVuelo else tiempoVuelo
         }
 
         //Calcula el tiempo total de vuelo de un itinerario
         def calcularTiempo (v:Itinerario) = {
-           val cadaDistancia =  for {
+           val cadaTiempo =  for {
                 j <- v
 
-            } yield funDistancia(j.Org, j.Dst)
+            } yield funTiempo(j)
 
-            cadaDistancia.sum
+            cadaTiempo.sum
         }
 
         //Funcion de salida, calcula los tres itinerarios que tienen menor tiempo en el aire
         def miItinerario (aeropuerto1:String, aeropuerto2:String): List[Itinerario] = {
             val misItinerarios = funcionItinerario(aeropuerto1, aeropuerto2)
 
-            val tiempos =  for {
-                    i <- misItinerarios
-                    distancia = calcularTiempo(i)
-                } yield (i, distancia)
+            if (misItinerarios.length <= 3) misItinerarios 
+            else {
+                val tiempos =  for {
+                        i <- misItinerarios
+                        tiempoTotal = calcularTiempo(i)
+                    } yield (i, tiempoTotal)
 
-            val salida = tiempos.sortBy(_._2)
-            (((salida.unzip)._1).toList).take(3)
+                val salida = tiempos.sortBy(_._2)
+                (((salida.unzip)._1).toList).take(3)
+            }
         }
 
         miItinerario
     }
-
+  
   def itinerariosEscalas(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (String, String) => List[Itinerario] = {
     val obtenerItinerarios = itinerarios(vuelos, aeropuertos)
 
