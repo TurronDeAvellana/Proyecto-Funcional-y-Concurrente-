@@ -2,6 +2,8 @@ import Datos._
 
 package object Itinerarios {
 
+  def minutosDesdeMedianoche(hora: Int, minutos: Int, gmt: Int): Int = (60 * hora + minutos - gmt * 0.6).toInt //Realmente siempre es entero pero scala no sabe
+  
   def itinerarios(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (String, String) => List[Itinerario] = {
 
 
@@ -166,6 +168,54 @@ package object Itinerarios {
 
     encontrarTresMenosEscalas
   }
+  
+def itinerarioSalida(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (String, String, Int, Int) => Itinerario = {
 
+    //Busca el código en cada aeropuerto y cuendo lo encuentra devuelve su gmt, si no lo encuentra devuelve 0
+    def gmtDeAeropuerto(codigo: String): Int = aeropuertos.find(_.Cod == codigo).map(_.GMT).getOrElse(0)
+
+    //Define la hora exacta segun gmt de la cita en minutos, despues invoca a todos los vuelos
+    //posibles y los filtra, si se llega más tarde que la cita el vuelo se considera no válido,
+    //para todos los vuelos válidos escoge el que sale más tarde
+
+    (cod1: String, cod2: String, h: Int, m: Int) => {
+      val gmtDestino = gmtDeAeropuerto(cod2)
+      val citaEnMinutos = minutosDesdeMedianoche(h, m, gmtDestino)
+      val vuelosPosibles = itinerarios(vuelos,aeropuertos)(cod1,cod2)
+      val vuelosValidos = vuelosPosibles.filter { listaVuelos =>
+        if (listaVuelos.isEmpty) {
+          false
+        } else if (listaVuelos.length == 1) {
+          val vuelo = listaVuelos.head
+          val llegadaEnMinutos = minutosDesdeMedianoche(vuelo.HL, vuelo.ML, gmtDestino)
+          llegadaEnMinutos < citaEnMinutos
+        } else {
+          val vuelo = listaVuelos.last
+          val llegadaEnMinutos = minutosDesdeMedianoche(vuelo.HL, vuelo.ML, gmtDestino)
+          llegadaEnMinutos < citaEnMinutos
+        }
+      }
+
+      /*A mi consideracion solo debe estar esta
+
+      vuelosValidos.maxByOption { listaVuelos =>
+        listaVuelos.headOption.map(vuelo => vuelo.HS * 60 + vuelo.MS).getOrElse(0)
+      }.getOrElse(List.empty)
+
+      Ya que cuando no se llega a tiempo simplemente deberia resultar en una lista vacía que
+      significa que no hay vuelos que le sirvan al usuario
+       */
+
+      if (vuelosValidos==List()) { vuelosPosibles.maxByOption { listaVuelos =>
+        listaVuelos.headOption.map(vuelo => vuelo.HS * 60 + vuelo.MS).getOrElse(0)
+      }.getOrElse(List.empty)
+
+      } else { vuelosValidos.maxByOption { listaVuelos =>
+        listaVuelos.headOption.map(vuelo => vuelo.HS * 60 + vuelo.MS).getOrElse(0)
+      }.getOrElse(List.empty)
+      }
+
+    }
+  }
 
 }
