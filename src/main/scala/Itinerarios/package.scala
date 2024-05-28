@@ -3,9 +3,19 @@ import Datos._
 package object Itinerarios {
 
   def minutosDesdeMedianoche(hora: Int, minutos: Int, gmt: Int): Int = (60 * hora + minutos - gmt * 0.6).toInt //Realmente siempre es entero pero scala no sabe
-  
-  def itinerarios(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (String, String) => List[Itinerario] = {
 
+  def comprobarValidez(itinerario: Itinerario, aeropuertos: List[Aeropuerto]): Boolean = {
+
+    def gmtDeAeropuerto(codigo: String): Int = aeropuertos.find(_.Cod == codigo).map(_.GMT).getOrElse(0)
+
+    itinerario.zip(itinerario.tail).forall { case (vueloActual, vueloSiguiente) =>
+      val llegadaActual = minutosDesdeMedianoche(vueloActual.HL, vueloActual.ML, gmtDeAeropuerto(vueloActual.Dst))
+      val salidaSiguiente = minutosDesdeMedianoche(vueloSiguiente.HS, vueloSiguiente.MS, gmtDeAeropuerto(vueloSiguiente.Org))
+      llegadaActual < salidaSiguiente
+    }
+  }
+
+  def itinerarios(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (String, String) => List[Itinerario] = {
 
     //Funcion para encontrar los itinerarios, toma dos codigos, codigo1 el origen y codigo2 la llegada
     def encontrarItinerarios(codigo1: String, codigo2: String): List[Itinerario] = {
@@ -17,24 +27,26 @@ package object Itinerarios {
 
 
       // Función auxiliar para encontrar los itinerarios de un vuelo hasta el destino de manera recursiva
-      def itinerariosDesdeVuelo(vuelo: Vuelo, destino: String): List[Itinerario] =
+      def itinerariosDesdeVuelo(vuelo: Vuelo, destino: String,aeropuertosVisitados: Set[String]): List[Itinerario] =
         if (vuelo.Dst == destino)
-          // Si el aeropuerto de destino del vuelo coincide con el destino buscado, devuelve una lista con un solo
+          //Si el aeropuerto de destino del vuelo coincide con el destino buscado, devuelve una lista con un solo
           // itinerario que contiene ese vuelo
           List(List(vuelo))
-        else
-          // De lo contrario, busca todos los vuelos que parten desde el aeropuerto del destino actual
-          // y para cada uno de ellos calcula los itinerarios que parten desde ese vuelo hasta el destino buscado
-          vuelosDesde(vuelo.Dst).flatMap(v => itinerariosDesdeVuelo(v, destino).map(vuelo :: _))
+        else if (!aeropuertosVisitados.contains(vuelo.Dst))
+          /* De lo contrario, busca todos los vuelos que parten desde el aeropuerto del destino actual
+           * solamente cuando el set de aeropuertos visitados no contenga el destino del vuelo
+           * y para cada uno de ellos calcula los itinerarios que parten desde ese vuelo hasta el destino buscado */
+          vuelosDesde(vuelo.Dst).flatMap(v => itinerariosDesdeVuelo(v, destino,aeropuertosVisitados + vuelo.Dst).map(vuelo :: _))
+        else List()
       // Con el flatMap concatenamos todos los itinerarios encotrados y map para agregar el vuelo actual al incicio
       //de cada uno de estos itinerarios
 
 
-      // lógica principal, obtiene todos los vuelos que parten desde el aeropuerto de origen y para cada uno de ellos, calcula
-      // los itinerarios hasta el aeropuerto de destino
-      vuelosDesde(codigo1).flatMap(v => itinerariosDesdeVuelo(v, codigo2))
+      /* lógica principal, obtiene todos los vuelos que parten desde el aeropuerto de origen y para cada uno de ellos, calcula
+       * los itinerarios hasta el aeropuerto de destino, se hace una comprobacion de validez para asegurarse que
+       * el vuelo en el destino no salga antes de que llegue el vuelo abordado */
+      vuelosDesde(codigo1).flatMap(v => itinerariosDesdeVuelo(v, codigo2,Set(codigo1))).filter(itinerario => comprobarValidez(itinerario, aeropuertos))
     }
-
 
     encontrarItinerarios
   }
@@ -193,26 +205,9 @@ def itinerarioSalida(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (Strin
           llegadaEnMinutos <= citaEnMinutos
         }
       }
-
-      /*A mi consideracion solo debe estar esta
-
       vuelosValidos.maxByOption { listaVuelos =>
         listaVuelos.headOption.map(vuelo => vuelo.HS * 60 + vuelo.MS).getOrElse(0)
       }.getOrElse(List.empty)
-
-      Ya que cuando no se llega a tiempo simplemente deberia resultar en una lista vacía que
-      significa que no hay vuelos que le sirvan al usuario
-       */
-
-      if (vuelosValidos==List()) { vuelosPosibles.maxByOption { listaVuelos =>
-        listaVuelos.headOption.map(vuelo => vuelo.HS * 60 + vuelo.MS).getOrElse(0)
-      }.getOrElse(List.empty)
-
-      } else { vuelosValidos.maxByOption { listaVuelos =>
-        listaVuelos.headOption.map(vuelo => vuelo.HS * 60 + vuelo.MS).getOrElse(0)
-      }.getOrElse(List.empty)
-      }
-
     }
   }
 
