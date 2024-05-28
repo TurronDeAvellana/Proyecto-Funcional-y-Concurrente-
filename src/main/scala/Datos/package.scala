@@ -50,6 +50,7 @@ package object Datos {
     Vuelo("AVA", 5643, "BAQ", 14, 0, "MEX", 16, 0, 0),
     Vuelo("COPA", 1234, "CTG", 10, 0, "PTY", 11, 30, 0),
     Vuelo("AVA", 4321, "CTG", 9, 30, "SMR", 10, 0, 0),
+    //Vuelo("AVA", 4322, "SMR", 9, 30, "SMR", 10, 0, 0),
     Vuelo("COPA", 7631, "SMR", 10, 50, "PTY", 11, 50, 0),
     Vuelo("TURKISH", 7799, "CLO", 7, 0, "IST", 14, 0, 3),
     Vuelo("QATAR", 5566, "IST", 23, 0, "SVO", 2, 0, 0)
