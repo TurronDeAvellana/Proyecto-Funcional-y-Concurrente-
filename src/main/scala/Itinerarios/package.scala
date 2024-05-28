@@ -187,14 +187,10 @@ def itinerarioSalida(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto]): (Strin
       val vuelosValidos = vuelosPosibles.filter { listaVuelos =>
         if (listaVuelos.isEmpty) {
           false
-        } else if (listaVuelos.length == 1) {
-          val vuelo = listaVuelos.head
-          val llegadaEnMinutos = minutosDesdeMedianoche(vuelo.HL, vuelo.ML, gmtDestino)
-          llegadaEnMinutos < citaEnMinutos
         } else {
           val vuelo = listaVuelos.last
           val llegadaEnMinutos = minutosDesdeMedianoche(vuelo.HL, vuelo.ML, gmtDestino)
-          llegadaEnMinutos < citaEnMinutos
+          llegadaEnMinutos <= citaEnMinutos
         }
       }
 
