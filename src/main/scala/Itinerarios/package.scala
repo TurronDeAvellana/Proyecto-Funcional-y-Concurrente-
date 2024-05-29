@@ -119,51 +119,34 @@ package object Itinerarios {
   }
 
 
-  def itinerariosAire(vuelos : List [ Vuelo ] , aeropuertos : List [ Aeropuerto] ) : ( String , String )=>List [Itinerario ]= {
+  def itinerariosAire(vuelos:List[Vuelo], aeropuertos:List[Aeropuerto]):(String, String) => List[Itinerario] = {
         //Obtiene todos los itinerarios podibles
         val funcionItinerario = itinerarios(vuelos, aeropuertos)
-
         //Calcula el tiempo total de un solo vuelo
-        def funTiempo(vuelo:Vuelo) = {
+        def funTiempo(vuelo:Vuelo):Double = {
             val a1 = aeropuertos.filter(_.Cod == vuelo.Org)
             val a2 = aeropuertos.filter(_.Cod == vuelo.Dst)
-
             val gmtSalida = (a1.head).GMT/100
             val gmtLlegada = (a2.head).GMT/100
-           
-            val horaSalida = (vuelo.HS + (vuelo.MS/60)) - gmtSalida
-            val horaLlegada = (vuelo.HL + (vuelo.ML/60)) - gmtLlegada
+            val horaSalida = (vuelo.HS + (vuelo.MS.toDouble/60)) - gmtSalida
+            val horaLlegada = (vuelo.HL + (vuelo.ML.toDouble/60)) - gmtLlegada
             val tiempoVuelo = horaLlegada - horaSalida
-            
-            if (tiempoVuelo < 0) 24 + tiempoVuelo else tiempoVuelo
+            if (tiempoVuelo <= 0) 24 + tiempoVuelo else tiempoVuelo
         }
-
         //Calcula el tiempo total de vuelo de un itinerario
-        def calcularTiempo (v:Itinerario) = {
-           val cadaTiempo =  for {
-                j <- v
-
-            } yield funTiempo(j)
-
-            cadaTiempo.sum
+        def calcularTiempo (v:Itinerario):Double = {
+           (v map (i => funTiempo(i))).sum
         }
-
         //Funcion de salida, calcula los tres itinerarios que tienen menor tiempo en el aire
         def miItinerario (aeropuerto1:String, aeropuerto2:String): List[Itinerario] = {
             val misItinerarios = funcionItinerario(aeropuerto1, aeropuerto2)
-
             if (misItinerarios.length <= 3) misItinerarios 
             else {
-                val tiempos =  for {
-                        i <- misItinerarios
-                        tiempoTotal = calcularTiempo(i)
-                    } yield (i, tiempoTotal)
-
+                val tiempos = misItinerarios map (c => (c, calcularTiempo(c)))
                 val salida = tiempos.sortBy(_._2)
                 (((salida.unzip)._1).toList).take(3)
             }
         }
-
         miItinerario
     }
   
