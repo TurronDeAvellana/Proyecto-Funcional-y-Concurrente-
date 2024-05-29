@@ -1,5 +1,6 @@
 import Datos._
 import Itinerarios._
+import ItinerariosPar._
 
 val itsCurso = itinerarios(vuelosCurso, aeropuertosCurso)
 
@@ -12,7 +13,7 @@ val its4 = itsCurso("CLO", "MEX")
 
 val its5 = itsCurso("CTG", "PTY")
 
-val itsEscalasCurso = itinerariosEscalas(vuelosCurso,aeropuertosCurso)
+val itsEscalasCurso = itinerariosEscalasPar(vuelosCurso,aeropuertosCurso)
 
 val itsc1 = itsEscalasCurso("MID","SVCS")
 val itsc2 = itsEscalasCurso("CLO","SVCS")
